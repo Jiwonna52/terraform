@@ -132,6 +132,7 @@ resource "aws_internet_gateway" "igw-main" {
   }
 }
 
+/*
 #EIP
 resource "aws_eip" "eip01" {
   domain = "vpc"
@@ -140,7 +141,7 @@ resource "aws_eip" "eip01" {
     owner = "njw"
     type = "eip"
   }
-}
+}*/
 
 resource "aws_eip" "eip02" {
   domain = "vpc"
@@ -151,6 +152,7 @@ resource "aws_eip" "eip02" {
   }
 }
 
+/*
 #Nat Gateway
 resource "aws_nat_gateway" "nat-gw01" {
   allocation_id     = aws_eip.eip01.id
@@ -163,7 +165,7 @@ resource "aws_nat_gateway" "nat-gw01" {
     owner = "njw"
     type = "nat-gw"
   }
-}
+}*/
 
 resource "aws_nat_gateway" "nat-gw02" {
   allocation_id     = aws_eip.eip02.id
@@ -210,7 +212,7 @@ resource "aws_route_table" "route-table-private01" {
 
   route {
     cidr_block = "0.0.0.0/0"
-    gateway_id = aws_nat_gateway.nat-gw01.id
+    gateway_id = aws_nat_gateway.nat-gw02.id
   }
 
   tags = {
@@ -310,7 +312,16 @@ resource "aws_security_group" "asg-sg-web" {
   name        = "asg-sg-web"
   description = "ASG Security Group for web"
   vpc_id      = aws_vpc.vpc-main.id
+  
+  ingress {
+    description     = "HTTP from ALB"
+    from_port       = 32768
+    to_port         = 61000
+    protocol        = "tcp"
+    security_groups = [aws_security_group.alb-sg-web.id]
+  }
 
+/*
   ingress {
     description     = "HTTP from ALB"
     from_port       = 80
@@ -325,7 +336,7 @@ resource "aws_security_group" "asg-sg-web" {
     to_port     = 443
     protocol    = "tcp"
     security_groups = [aws_security_group.alb-sg-web.id]
-  }
+  }*/
 
   egress {
     from_port   = 0
@@ -375,14 +386,23 @@ resource "aws_security_group" "asg-sg-app" {
   name        = "asg-sg-app"
   description = "ASG Security Group for app"
   vpc_id      = aws_vpc.vpc-main.id
+  
+  ingress {
+    description     = "HTTP from ALB"
+    from_port       = 32768
+    to_port         = 61000
+    protocol        = "tcp"
+    security_groups = [aws_security_group.alb-sg-web.id]
+  }
 
+/*
   ingress {
     description     = "HTTP from ALB"
     from_port       = 80
     to_port         = 80
     protocol        = "tcp"
     security_groups = [aws_security_group.alb-sg-app.id]
-  }
+  }*/
 
   egress {
     from_port   = 0
